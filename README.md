@@ -1,6 +1,9 @@
 # Momo-SMS-Data
 Team Setup and Project Planning assignment to simulate how Momo process data and practice team collaboration.
 
+## Project
+GitHub project for task management: https://github.com/users/rebakevin/projects/1
+
 ## Meet the team 
 1. Elie Kuradusenge
 2. Victor Mugisha Shyaka
