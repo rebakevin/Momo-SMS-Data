@@ -1,3 +1,26 @@
-.idea
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+.data_parsed_flag
+.env
+
+# OS
+.DS_Store
+Thumbs.db

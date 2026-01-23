@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sms_transactions>
+    <transaction id="1">
+        <sender>+256700123456</sender>
+        <recipient>+256700987654</recipient>
+        <amount currency="UGX">50000</amount>
+        <timestamp>2026-01-15T10:30:00Z</timestamp>
+        <status>completed</status>
+        <reference>TXN001234567</reference>
+        <type>mobile_money</type>
+    </transaction>
+    <transaction id="2">
+        <sender>+256700234567</sender>
+        <recipient>+256700876543</recipient>
+        <amount currency="UGX">75000</amount>
+        <timestamp>2026-01-15T11:45:00Z</timestamp>
+        <status>completed</status>
+        <reference>TXN001234568</reference>
+        <type>mobile_money</type>
+    </transaction>
+    <transaction id="3">
+        <sender>+256700345678</sender>
+        <recipient>+256700765432</recipient>
+        <amount currency="UGX">120000</amount>
+        <timestamp>2026-01-15T14:20:00Z</timestamp>
+        <status>pending</status>
+        <reference>TXN001234569</reference>
+        <type>mobile_money</type>
+    </transaction>
+    <transaction id="4">
+        <sender>+256700456789</sender>
+        <recipient>+256700654321</recipient>
+        <amount currency="UGX">30000</amount>
+        <timestamp>2026-01-16T09:15:00Z</timestamp>
+        <status>completed</status>
+        <reference>TXN001234570</reference>
+        <type>mobile_money</type>
+    </transaction>
+    <transaction id="5">
+        <sender>+256700567890</sender>
+        <recipient>+256700543210</recipient>
+        <amount currency="UGX">200000</amount>
+        <timestamp>2026-01-16T16:30:00Z</timestamp>
+        <status>failed</status>
+        <reference>TXN001234571</reference>
+        <type>mobile_money</type>
+        <error>Insufficient funds</error>
+    </transaction>
+</sms_transactions>
