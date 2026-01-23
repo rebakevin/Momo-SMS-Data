@@ -1,0 +1,23 @@
+[
+    {
+        "sender": "M-Money",
+        "type": "received",
+        "amount_rwf": 2000,
+        "from": "Jane Smith",
+        "phone_masked": "*********013",
+        "date": "2024-05-10T16:30:51",
+        "balance_rwf": 2000,
+        "transaction_id": "76662021700",
+        "readable_date": "10 May 2024 4:30:58 PM"
+    },
+    {
+        "sender": "M-Money",
+        "amount_rwf": 100,
+        "transaction_id": "ranasdfasdf"
+    },
+    {
+        "sender": "M-Money",
+        "amount_rwf": 100,
+        "transaction_id": "ranasdfasdf"
+    }
+]
