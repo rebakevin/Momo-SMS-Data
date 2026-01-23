@@ -1,0 +1,35 @@
+[
+    {
+        "sender": "M-Money",
+        "amount_rwf": 10000,
+        "type": "received",
+        "from": "Kevin Rebakure",
+        "phone_masked": "*******630",
+        "transaction_id": "1",
+        "date": "2026-01-23T12:32:38",
+        "readable_date": "23 Jan 2026 12:32:38 PM",
+        "balance_rwf": 10000
+    },
+    {
+        "sender": "M-Money",
+        "amount_rwf": 10000,
+        "type": "received",
+        "from": "Kevin Rebakure",
+        "phone_masked": "*******630",
+        "transaction_id": "2",
+        "date": "2026-01-23T12:32:44",
+        "readable_date": "23 Jan 2026 12:32:44 PM",
+        "balance_rwf": 20000
+    },
+    {
+        "sender": "M-Money",
+        "amount_rwf": 10000,
+        "type": "received",
+        "from": "Kevin Rebakure",
+        "phone_masked": "*******630",
+        "transaction_id": 3,
+        "date": "2026-01-23T12:34:00",
+        "readable_date": "23 Jan 2026 12:34:00 PM",
+        "balance_rwf": 30000
+    }
+]
