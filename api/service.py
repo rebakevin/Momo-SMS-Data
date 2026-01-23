@@ -59,6 +59,26 @@ class SMSTransactionsService:
                 pass
         return []
 
+    def get_all_transactions(self):
+        """Retrieve all transactions from the data file."""
+        transactions = self.read_transactions()
+        return True, None, transactions
+
+    def get_transaction_by_id(self, transaction_id):
+        """Retrieve a single transaction by ID."""
+        try:
+            transaction_id = int(transaction_id)
+        except (ValueError, TypeError):
+            return False, "Bad Request: Invalid transaction ID format", None
+        
+        transactions = self.read_transactions()
+        
+        for transaction in transactions:
+            if transaction.get("transaction_id") == transaction_id:
+                return True, None, transaction
+        
+        return False, f"Not Found: Transaction with ID {transaction_id} does not exist", None
+
     def generate_transaction_id(self, transactions):
         max_id = 0
         for t in transactions:
