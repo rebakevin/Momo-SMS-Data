@@ -1,21 +1,40 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
+import re
 from urllib.parse import urlparse
-from api.auth import is_authenticated
-from api.data_parser import DataParser
-from api.router import APIRouter, success_response, error_response
+from api.routes import ROUTES
+from api.service import SMSTransactionsService
 
-# Initialize API Router with apispec
-router = APIRouter(
-    title="Momo SMS Data API",
-    version="1.0.0",
-    description="API for SMS transaction data management and parsing"
-)
 
 class SMSTransactionsHandler(BaseHTTPRequestHandler):
     
-    # Initialize data parser instance
-    data_parser = DataParser()
+    # Initialize service instance for transaction handling
+    service = SMSTransactionsService()
+    
+    def _match_route(self, method, path):
+        """Match path against routes with parameter support"""
+        routes = ROUTES.get(method, {})
+        
+        # First try exact match
+        if path in routes:
+            return routes[path], {}
+        
+        # Try pattern matching for parameterized routes
+        for route_pattern, handler in routes.items():
+            if ':' in route_pattern:
+                # Convert route pattern to regex
+                # /transactions/:id -> /transactions/([^/]+)
+                regex_pattern = re.sub(r':(\w+)', r'([^/]+)', route_pattern)
+                regex_pattern = '^' + regex_pattern + '$'
+                
+                match = re.match(regex_pattern, path)
+                if match:
+                    # Extract parameter names and values
+                    param_names = re.findall(r':(\w+)', route_pattern)
+                    params = dict(zip(param_names, match.groups()))
+                    return handler, params
+        
+        return None, {}
     
     def _send_error_response(self, status_code, message):
         self.send_response(status_code)
@@ -27,26 +46,17 @@ class SMSTransactionsHandler(BaseHTTPRequestHandler):
         self.end_headers()
         response = {"error": message}
         self.wfile.write(json.dumps(response).encode())
-    
-    def _send_json_response(self, data, status_code=200):
-        self.send_response(status_code)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        self.wfile.write(json.dumps(data, indent=2).encode())
-    
-    def _send_html_response(self, html, status_code=200):
-        self.send_response(status_code)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.end_headers()
-        self.wfile.write(html.encode('utf-8'))
 
     def do_GET(self):
         """Handle GET requests"""
         path = urlparse(self.path).path
         
-        if path in router.routes.get('GET', {}):
-            handler = router.routes['GET'][path]
-            handler(self)
+        handler_func, params = self._match_route('GET', path)
+        if handler_func:
+            if params:
+                handler_func(self, **params)
+            else:
+                handler_func(self)
         else:
             self._send_error_response(404, "Route not found")
     
@@ -54,120 +64,27 @@ class SMSTransactionsHandler(BaseHTTPRequestHandler):
         """Handle POST requests"""
         path = urlparse(self.path).path
         
-        if path in router.routes.get('POST', {}):
-            handler = router.routes['POST'][path]
-            handler(self)
+        handler_func, params = self._match_route('POST', path)
+        if handler_func:
+            if params:
+                handler_func(self, **params)
+            else:
+                handler_func(self)
         else:
             self._send_error_response(404, "Route not found")
     
-    # ========== Route Handlers ==========
-    
-    @router.route(
-        path="/",
-        methods=["GET"],
-        summary="Authentication check",
-        description="Verify basic authentication credentials",
-        require_auth=True,
-        responses={
-            "200": success_response("Authentication successful", {"message": "Authentication successful"}),
-            "401": error_response("Unauthorized", {"error": "Unauthorized: Invalid or missing credentials"})
-        },
-        tags=["Authentication"]
-    )
-    def handle_auth_check(self):
-        """Verify that the user has valid authentication credentials"""
-        if not is_authenticated(self.headers):
-            self._send_error_response(401, "Unauthorized: Invalid or missing credentials")
-            return
+    def do_DELETE(self):
+        """Handle DELETE requests"""
+        path = urlparse(self.path).path
         
-        self._send_json_response({"message": "Authentication successful"})
-    
-    @router.route(
-        path="/one-time-data-parser",
-        methods=["POST"],
-        summary="Parse XML data to JSON (One-time only)",
-        description="Converts XML data from app/assets/modified_sms_v2.xml to JSON format. "
-                    "This endpoint can only be called once successfully. Subsequent calls will return an error.",
-        require_auth=True,
-        responses={
-            "200": {
-                "description": "Data parsed successfully",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "success": {"type": "boolean"},
-                                "message": {"type": "string"},
-                                "data": {"type": "object"},
-                                "record_count": {"type": "integer"}
-                            }
-                        },
-                        "example": {
-                            "success": True,
-                            "message": "XML data successfully parsed to JSON",
-                            "data": {},
-                            "record_count": 5
-                        }
-                    }
-                }
-            },
-            "400": error_response("Bad request - Already parsed or file error", 
-                                 {"error": "Data has already been parsed. This endpoint can only be called once."}),
-            "401": error_response("Unauthorized", {"error": "Unauthorized: Invalid or missing credentials"})
-        },
-        tags=["Data Management"]
-    )
-    def handle_data_parser(self):
-        """Parse XML data from assets folder and convert to JSON format"""
-        if not is_authenticated(self.headers):
-            self._send_error_response(401, "Unauthorized: Invalid or missing credentials")
-            return
-        
-        try:
-            result = self.data_parser.parse_xml_to_json()
-            self._send_json_response(result)
-        except Exception as e:
-            self._send_error_response(400, str(e))
-    
-    @router.route(
-        path="/api-docs",
-        methods=["GET"],
-        summary="Swagger UI Documentation",
-        description="Interactive Swagger UI interface to explore and test all available API endpoints",
-        require_auth=False,
-        responses={
-            "200": {
-                "description": "Swagger UI HTML page",
-                "content": {"text/html": {"schema": {"type": "string"}}}
-            }
-        },
-        tags=["Documentation"]
-    )
-    def handle_swagger_ui(self):
-        """Serve Swagger UI interface for interactive API documentation"""
-        html = router.get_swagger_ui_html()
-        self._send_html_response(html)
-    
-    @router.route(
-        path="/openapi.json",
-        methods=["GET"],
-        summary="OpenAPI JSON Specification",
-        description="Get the OpenAPI 3.0 JSON specification for all available endpoints. "
-                    "Automatically generated using apispec.",
-        require_auth=False,
-        responses={
-            "200": {
-                "description": "OpenAPI 3.0 specification",
-                "content": {"application/json": {"schema": {"type": "object"}}}
-            }
-        },
-        tags=["Documentation"]
-    )
-    def handle_openapi_spec(self):
-        """Generate and serve OpenAPI specification using apispec"""
-        spec = router.get_openapi_spec()
-        self._send_json_response(spec)
+        handler_func, params = self._match_route('DELETE', path)
+        if handler_func:
+            if params:
+                handler_func(self, **params)
+            else:
+                handler_func(self)
+        else:
+            self._send_error_response(404, "Route not found")
 
 
 if __name__ == "__main__":

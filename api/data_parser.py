@@ -11,16 +11,15 @@ from pathlib import Path
 class DataParser:
     def __init__(self):
         self.xml_file_path = Path(__file__).parent.parent / "app" / "assets" / "modified_sms_v2.xml"
+        self.json_output_path = Path(__file__).parent.parent / "assets" / "transactions.json"
         self.parsed_data = None
         self.is_parsed = False
         self.parse_flag_file = Path(__file__).parent.parent / ".data_parsed_flag"
     
     def has_been_parsed(self):
-        """Check if data has already been parsed once"""
         return self.parse_flag_file.exists()
     
     def mark_as_parsed(self):
-        """Create a flag file to indicate data has been parsed"""
         with open(self.parse_flag_file, 'w') as f:
             f.write("Data parsed successfully")
         self.is_parsed = True
@@ -49,14 +48,19 @@ class DataParser:
             data = self._parse_element(root)
             self.parsed_data = data
             
+            # Save parsed data to transactions.json
+            with open(self.json_output_path, 'w') as json_file:
+                json.dump(data, json_file, indent=2)
+            
             # Mark as parsed
             self.mark_as_parsed()
             
             return {
                 "success": True,
-                "message": "XML data successfully parsed to JSON",
+                "message": "XML data successfully parsed to JSON and saved to transactions.json",
                 "data": data,
-                "record_count": self._count_records(data)
+                "record_count": self._count_records(data),
+                "output_file": str(self.json_output_path)
             }
         
         except ET.ParseError as e:
@@ -124,3 +128,5 @@ class DataParser:
         if self.parse_flag_file.exists():
             os.remove(self.parse_flag_file)
         self.is_parsed = False
+        if self.json_output_path.exists():
+            os.remove(self.json_output_path)
