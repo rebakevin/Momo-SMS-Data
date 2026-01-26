@@ -1,8 +1,3 @@
-"""
-API Routes and Documentation System
-Contains route handlers and OpenAPI documentation generation using apispec
-"""
-
 from apispec import APISpec
 from functools import wraps
 import json
@@ -11,13 +6,7 @@ from api.data_parser import DataParser
 
 
 class APIRouter:
-    """
-    Unified router and OpenAPI documentation system using apispec.
-    Single source of truth for routing and documentation.
-    """
-
     def __init__(self, title, version, openapi_version="3.0.3", description=""):
-        """Initialize APISpec and route registry"""
         self.spec = APISpec(
             title=title,
             version=version,
@@ -38,19 +27,6 @@ class APIRouter:
 
     def route(self, path, methods=None, summary="", description="",
               require_auth=False, responses=None, tags=None, parameters=None):
-        """
-        Decorator to register route and OpenAPI documentation.
-
-        Args:
-            path: API endpoint path
-            methods: List of HTTP methods (e.g., ['GET', 'POST'])
-            summary: Brief endpoint description
-            description: Detailed endpoint description
-            require_auth: Whether endpoint requires authentication
-            responses: Dict of response codes and descriptions
-            tags: List of tags for grouping endpoints
-            parameters: List of parameter definitions for path/query parameters
-        """
         if methods is None:
             methods = ['GET']
 
@@ -169,7 +145,6 @@ class APIRouter:
 
 
 def success_response(description="Success", example=None):
-    """Standard success response schema"""
     schema = {
         "description": description,
         "content": {
@@ -189,7 +164,6 @@ def success_response(description="Success", example=None):
 
 
 def error_response(description="Error", example=None):
-    """Standard error response schema"""
     schema = {
         "description": description,
         "content": {
@@ -475,7 +449,6 @@ def _doc_openapi_spec():
 
 
 def handle_auth_check(handler):
-    """Verify that the user has valid authentication credentials"""
     if not is_authenticated(handler.headers):
         handler.send_response(401)
         handler.send_header('Content-type', 'application/json')
@@ -493,7 +466,6 @@ def handle_auth_check(handler):
 
 
 def handle_data_parser(handler):
-    """Parse XML data from assets folder and convert to JSON format"""
     if not is_authenticated(handler.headers):
         handler.send_response(401)
         handler.send_header('Content-type', 'application/json')
@@ -517,7 +489,6 @@ def handle_data_parser(handler):
 
 
 def handle_swagger_ui(handler):
-    """Serve Swagger UI interface for interactive API documentation"""
     html = api_router.get_swagger_ui_html()
     handler.send_response(200)
     handler.send_header('Content-type', 'text/html; charset=utf-8')
@@ -526,7 +497,6 @@ def handle_swagger_ui(handler):
 
 
 def handle_openapi_spec(handler):
-    """Generate and serve OpenAPI specification using apispec"""
     spec = api_router.get_openapi_spec()
     handler.send_response(200)
     handler.send_header('Content-type', 'application/json')
@@ -534,21 +504,7 @@ def handle_openapi_spec(handler):
     handler.wfile.write(json.dumps(spec, indent=2).encode())
 
 
-def get_transactions(handler):
-    service = handler.service
-
-    if not service.is_authenticated(handler.headers):
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
-        return
-
-    transactions = service.read_transactions()
-    service.response(handler, 200, transactions)
-
-
 def get_all_transactions(handler):
-    """Controller handler to retrieve all transactions."""
     service = handler.service
 
     if not service.is_authenticated(handler.headers):
@@ -599,7 +555,6 @@ def create_transaction(handler):
 
 
 def get_transaction_by_id(handler):
-    """Controller handler to retrieve a transaction by ID."""
     service = handler.service
 
     if not service.is_authenticated(handler.headers):
@@ -657,9 +612,8 @@ def delete_transaction(handler, id):
 ROUTES = {
     "GET": {
         "/": handle_auth_check,
-        "/transactions": get_transactions,
-        "/transactions/all": get_all_transactions,
-        "/transactions/{id}": get_transaction_by_id
+        "/transactions": get_all_transactions,
+        "/transactions/{id}": get_transaction_by_id,
         "/api-docs": handle_swagger_ui,
         "/openapi.json": handle_openapi_spec,
     },
