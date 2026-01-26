@@ -13,7 +13,7 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
     def handle_route(self, method):
         routes = ROUTES.get(method, {})
 
-        # 1️⃣ Try exact (static) routes first
+    
         if self.path in routes:
             routes[self.path](self)
             return
