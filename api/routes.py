@@ -196,6 +196,9 @@ ROUTES = {
         "/transactions": create_transaction,
         "/one-time-data-parser": handle_data_parser,
     },
+    "PUT": {
+        "/transactions/:id": update_transaction,
+    },
     "DELETE": {
         "/transactions/:id": delete_transaction,
     }
