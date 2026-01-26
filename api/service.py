@@ -38,11 +38,9 @@ class SMSTransactionsService:
         if missing_fields:
              return False, f"Bad Request: Missing required fields ({', '.join(missing_fields)})", None
         
-        # Validate type
         if data["type"] not in ["received", "sent"]:
             return False, "Bad Request: type must be 'received' or 'sent'", None
             
-        # Validate amount
         if not isinstance(data["amount_rwf"], (int, float)) or data["amount_rwf"] <= 0:
             return False, "Bad Request: amount_rwf must be a positive number", None
             
@@ -95,7 +93,6 @@ class SMSTransactionsService:
     def write_transaction(self, data):
         transactions = self.read_transactions()
         
-        # 1. Mask phone number
         raw_phone = str(data.get("phone", ""))
         if len(raw_phone) > 3:
             masked_phone = "*" * (len(raw_phone) - 3) + raw_phone[-3:]
@@ -103,19 +100,17 @@ class SMSTransactionsService:
             masked_phone = raw_phone
         data["phone_masked"] = masked_phone
         
-        # 2. Generate transaction_id
+
         data["transaction_id"] = self.generate_transaction_id(transactions)
         
-        # 3. Date and readable_date
+
         now = datetime.now()
         data["date"] = now.strftime("%Y-%m-%dT%H:%M:%S")
-        # example: "10 May 2024 4:30:58 PM"
+    
         data["readable_date"] = now.strftime("%d %b %Y %I:%M:%S %p")
         
-        # 4. Calculate balance
         current_balance = 0
         if transactions:
-            # Assuming the list is ordered by time
             last_item = transactions[-1]
             current_balance = last_item.get("balance_rwf", 0)
             
@@ -132,8 +127,7 @@ class SMSTransactionsService:
             return False, "Bad Request: Invalid transaction type"
             
         data["balance_rwf"] = new_balance
-        
-        # Remove original 'phone' field because we will only store the phone_masked
+    
         if "phone" in data:
             del data["phone"]
 
