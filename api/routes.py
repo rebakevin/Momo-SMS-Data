@@ -125,6 +125,41 @@ def get_transaction_by_id(handler):
     })
 
 
+def update_transaction(handler, id):
+    service = handler.service
+
+    if not service.is_authenticated(handler.headers):
+        service.response(handler, 401, {
+            "error": "Unauthorized: Invalid or missing credentials"
+        })
+        return
+
+    is_valid, error, data = service.validate_create_transaction_request(
+        handler.headers,
+        handler.rfile
+    )
+
+    if not is_valid:
+        service.response(handler, 400, {"error": error})
+        return
+
+    success, error, updated_transaction = service.update_transaction(id, data)
+    if not success:
+        if "Not Found" in error:
+            service.response(handler, 404, {"error": error})
+        elif "Bad Request" in error:
+            service.response(handler, 400, {"error": error})
+        else:
+            service.response(handler, 500, {"error": error})
+        return
+
+    service.response(handler, 200, {
+        "status": "success",
+        "message": "Transaction updated successfully",
+        "data": updated_transaction
+    })
+
+
 def delete_transaction(handler, id):
     service = handler.service
 
@@ -160,6 +195,9 @@ ROUTES = {
     "POST": {
         "/transactions": create_transaction,
         "/one-time-data-parser": handle_data_parser,
+    },
+    "PUT": {
+        "/transactions/:id": update_transaction,
     },
     "DELETE": {
         "/transactions/:id": delete_transaction,
