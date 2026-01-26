@@ -66,7 +66,27 @@ If the request is succesful you will receive a JSON response object:
 <details>
 <summary>Click to expand</summary>
 
-[Elie - Documentation]
+To delete a transaction, send a DELETE request to `{{base_url}}/transactions/{id}`.
+
+**Success Response:**
+Example route: `{{base_url}}/transactions/3`
+
+```json
+{
+    "status": "success",
+    "message": "Transaction deleted successfully",
+    "transaction_id": 3
+}
+```
+
+**Fail Response:**
+If the transaction ID does not exist:
+
+```json
+{
+    "error": "Not Found: Transaction with ID 2 not found"
+}
+```
 
 </details>
 
