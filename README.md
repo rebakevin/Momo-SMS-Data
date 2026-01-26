@@ -26,3 +26,4 @@ This is a simple MoMo simulation app built in pure Python
 
 ## Other documents 
 - [Database_Design_Document_Cohort1_Team2](docs/Database_Design_Document_Cohort1_Team2.pdf)
+- [Team participation sheet](https://docs.google.com/spreadsheets/d/1NCB-1ds53lkJXSDRUqGpbYZV42F7CvnEn9rMcusWH8g/edit?usp=sharing)
