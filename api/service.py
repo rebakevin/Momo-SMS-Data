@@ -6,7 +6,8 @@ from api.auth import is_authenticated as check_auth
 
 
 class SMSTransactionsService:
-    DATA_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'assets', 'sample.json')
+    DATA_FILE = os.path.join(os.path.dirname(
+        os.path.dirname(__file__)), 'assets', 'transactions.json')
 
     def is_authenticated(self, headers):
         return check_auth(headers)
@@ -14,8 +15,8 @@ class SMSTransactionsService:
     def validate_create_transaction_request(self, headers, rfile):
         content_length_header = headers.get('Content-Length')
         if not content_length_header:
-             return False, "Bad Request: No content provided", None
-             
+            return False, "Bad Request: No content provided", None
+
         try:
             content_length = int(content_length_header)
         except ValueError:
@@ -33,19 +34,18 @@ class SMSTransactionsService:
             return False, "Bad Request: Could not read content", None
 
         required_fields = ["sender", "type", "amount_rwf", "from", "phone"]
-        missing_fields = [field for field in required_fields if field not in data]
-        
+        missing_fields = [
+            field for field in required_fields if field not in data]
+
         if missing_fields:
-             return False, f"Bad Request: Missing required fields ({', '.join(missing_fields)})", None
-        
-        # Validate type
+            return False, f"Bad Request: Missing required fields ({', '.join(missing_fields)})", None
+
         if data["type"] not in ["received", "sent"]:
             return False, "Bad Request: type must be 'received' or 'sent'", None
-            
-        # Validate amount
+
         if not isinstance(data["amount_rwf"], (int, float)) or data["amount_rwf"] <= 0:
             return False, "Bad Request: amount_rwf must be a positive number", None
-            
+
         return True, None, data
 
     def read_transactions(self):
@@ -74,34 +74,30 @@ class SMSTransactionsService:
 
     def write_transaction(self, data):
         transactions = self.read_transactions()
-        
-        # 1. Mask phone number
+
         raw_phone = str(data.get("phone", ""))
         if len(raw_phone) > 3:
             masked_phone = "*" * (len(raw_phone) - 3) + raw_phone[-3:]
         else:
             masked_phone = raw_phone
         data["phone_masked"] = masked_phone
-        
-        # 2. Generate transaction_id
+
         data["transaction_id"] = self.generate_transaction_id(transactions)
-        
-        # 3. Date and readable_date
+
         now = datetime.now()
         data["date"] = now.strftime("%Y-%m-%dT%H:%M:%S")
-        # example: "10 May 2024 4:30:58 PM"
+
         data["readable_date"] = now.strftime("%d %b %Y %I:%M:%S %p")
-        
-        # 4. Calculate balance
+
         current_balance = 0
         if transactions:
-            # Assuming the list is ordered by time
+
             last_item = transactions[-1]
             current_balance = last_item.get("balance_rwf", 0)
-            
+
         amount = data["amount_rwf"]
         transaction_type = data["type"]
-        
+
         if transaction_type == "received":
             new_balance = current_balance + amount
         elif transaction_type == "sent":
@@ -110,15 +106,14 @@ class SMSTransactionsService:
             new_balance = current_balance - amount
         else:
             return False, "Bad Request: Invalid transaction type"
-            
+
         data["balance_rwf"] = new_balance
-        
-        # Remove original 'phone' field because we will only store the phone_masked
+
         if "phone" in data:
             del data["phone"]
 
         transactions.append(data)
-        
+
         try:
             with open(self.DATA_FILE, 'w') as f:
                 json.dump(transactions, f, indent=4)
@@ -126,12 +121,35 @@ class SMSTransactionsService:
         except IOError:
             return False, "Internal Server Error: Could not save transaction"
 
+    def delete_transaction(self, transaction_id):
+        """Delete a transaction by its ID"""
+        transactions = self.read_transactions()
+
+        try:
+            target_id = int(transaction_id)
+        except (ValueError, TypeError):
+            return False, "Bad Request: Invalid transaction ID format", None
+
+        original_count = len(transactions)
+        transactions = [t for t in transactions if int(
+            t.get("transaction_id", -1)) != target_id]
+
+        if len(transactions) == original_count:
+            return False, f"Not Found: Transaction with ID {target_id} not found", None
+
+        try:
+            with open(self.DATA_FILE, 'w') as f:
+                json.dump(transactions, f, indent=4)
+            return True, None, target_id
+        except IOError:
+            return False, "Internal Server Error: Could not delete transaction", None
+
     def response(self, handler, status_code, data):
         handler.send_response(status_code)
         handler.send_header('Content-type', 'application/json')
-        
+
         if status_code == 401:
             handler.send_header('WWW-Authenticate', 'Basic realm="Momo API"')
-            
+
         handler.end_headers()
         handler.wfile.write(json.dumps(data).encode())

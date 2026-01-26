@@ -1,11 +1,46 @@
-# Test your FastAPI endpoints
+# Test your API endpoints
 
+### 1. Test Authentication (Without Credentials) - Should fail
 GET http://127.0.0.1:8000/
 Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/hello/User
+### 2. Test Authentication (With Credentials) - Should succeed
+GET http://127.0.0.1:8000/
+Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+###
+
+### 3. Get Swagger UI Documentation (No Auth Required)
+GET http://127.0.0.1:8000/api-docs
+Accept: text/html
+
+###
+
+### 4. Get OpenAPI JSON Specification (No Auth Required)
+GET http://127.0.0.1:8000/openapi.json
+Accept: application/json
+
+###
+
+### 5. Parse Data - One Time Parser (First Call - Should succeed)
+POST http://127.0.0.1:8000/one-time-data-parser
+Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+###
+
+### 6. Parse Data - One Time Parser (Second Call - Should fail)
+POST http://127.0.0.1:8000/one-time-data-parser
+Accept: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+###
+
+### 7. Parse Data Without Auth (Should fail)
+POST http://127.0.0.1:8000/one-time-data-parser
 Accept: application/json
 
 ###
