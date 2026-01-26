@@ -18,15 +18,12 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
             routes[self.path](self)
             return
 
-        # 2️⃣ Try dynamic routes like /transactions/{id}
         for route, handler in routes.items():
             if "{id}" in route:
-                # Convert /transactions/{id} → /transactions/(\d+)
                 pattern = route.replace("{id}", r"(\d+)")
                 match = re.fullmatch(pattern, self.path)
 
                 if match:
-                    # Store extracted path parameters
                     self.path_params = {
                         "id": match.group(1)
                     }
