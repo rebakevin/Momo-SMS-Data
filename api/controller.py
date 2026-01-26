@@ -1,37 +1,91 @@
-from http.server import BaseHTTPRequestHandler
+import json
 import re
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse
 
-from api.routes import ROUTES
+from api.docs import DOC_ROUTES
+from api.routes import ROUTES as APP_ROUTES
 from api.service import SMSTransactionsService
 
+# Merge routes from app and docs
+ROUTES = {}
+for source in [APP_ROUTES, DOC_ROUTES]:
+    for method, paths in source.items():
+        if method not in ROUTES:
+            ROUTES[method] = {}
+        ROUTES[method].update(paths)
+
+
 class SMSTransactionsController(BaseHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        self.service = SMSTransactionsService()
-        super().__init__(*args, **kwargs)
-
-    def handle_route(self, method):
+    
+    service = SMSTransactionsService()
+    
+    def _match_route(self, method, path):
         routes = ROUTES.get(method, {})
-
-        if self.path in routes:
-            routes[self.path](self)
-            return
-
-        for route, handler in routes.items():
-            if "{id}" in route:
-                pattern = route.replace("{id}", r"(\d+)")
-                match = re.fullmatch(pattern, self.path)
-
+        
+        if path in routes:
+            return routes[path], {}
+        
+        for route_pattern, handler in routes.items():
+            if ':' in route_pattern:
+                # Convert route pattern to regex
+                # /transactions/:id -> /transactions/([^/]+)
+                regex_pattern = re.sub(r':(\w+)', r'([^/]+)', route_pattern)
+                regex_pattern = '^' + regex_pattern + '$'
+                
+                match = re.match(regex_pattern, path)
                 if match:
-                    self.path_params = {
-                        "id": match.group(1)
-                    }
-                    handler(self)
-                    return
+                    # Extract parameter names and values
+                    param_names = re.findall(r':(\w+)', route_pattern)
+                    params = dict(zip(param_names, match.groups()))
+                    return handler, params
+        
+        return None, {}
+    
+    def _send_error_response(self, status_code, message):
+        self.send_response(status_code)
+        self.send_header('Content-type', 'application/json')
 
-        self.send_error(404, "Not Found")
+        if status_code == 401:
+            self.send_header('WWW-Authenticate', 'Basic realm="Momo API"')
+        
+        self.end_headers()
+        response = {"error": message}
+        self.wfile.write(json.dumps(response).encode())
 
     def do_GET(self):
-        self.handle_route("GET")
-
+        """Handle GET requests"""
+        path = urlparse(self.path).path
+        
+        handler_func, params = self._match_route('GET', path)
+        if handler_func:
+            if params:
+                handler_func(self, **params)
+            else:
+                handler_func(self)
+        else:
+            self._send_error_response(404, "Route not found")
+    
     def do_POST(self):
-        self.handle_route("POST")
+        path = urlparse(self.path).path
+        
+        handler_func, params = self._match_route('POST', path)
+        if handler_func:
+            if params:
+                handler_func(self, **params)
+            else:
+                handler_func(self)
+        else:
+            self._send_error_response(404, "Route not found")
+    
+    def do_DELETE(self):
+        path = urlparse(self.path).path
+        
+        handler_func, params = self._match_route('DELETE', path)
+        if handler_func:
+            if params:
+                handler_func(self, **params)
+            else:
+                handler_func(self)
+        else:
+            self._send_error_response(404, "Route not found")
