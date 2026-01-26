@@ -50,6 +50,38 @@ class SMSTransactionsService:
 
         return True, None, data
 
+    def validate_update_transaction_request(self, headers, rfile):
+        """Validate partial update request - only provided fields are required"""
+        content_length_header = headers.get('Content-Length')
+        if not content_length_header:
+            return False, "Bad Request: No content provided", None
+
+        try:
+            content_length = int(content_length_header)
+        except ValueError:
+            return False, "Bad Request: Invalid Content-Length", None
+
+        if content_length == 0:
+            return False, "Bad Request: No content provided", None
+
+        try:
+            post_data = rfile.read(content_length)
+            data = json.loads(post_data.decode('utf-8'))
+        except json.JSONDecodeError:
+            return False, "Bad Request: Invalid JSON", None
+        except Exception:
+            return False, "Bad Request: Could not read content", None
+
+        # Only validate fields that are provided
+        if "type" in data and data["type"] not in ["received", "sent"]:
+            return False, "Bad Request: type must be 'received' or 'sent'", None
+
+        if "amount_rwf" in data:
+            if not isinstance(data["amount_rwf"], (int, float)) or data["amount_rwf"] <= 0:
+                return False, "Bad Request: amount_rwf must be a positive number", None
+
+        return True, None, data
+
     def read_transactions(self):
         if os.path.exists(self.DATA_FILE):
             try:
