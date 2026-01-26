@@ -134,7 +134,7 @@ def update_transaction(handler, id):
         })
         return
 
-    is_valid, error, data = service.validate_create_transaction_request(
+    is_valid, error, data = service.validate_update_transaction_request(
         handler.headers,
         handler.rfile
     )
