@@ -61,12 +61,10 @@ class SMSTransactionsService:
         return []
 
     def get_all_transactions(self):
-        """Retrieve all transactions from the data file."""
         transactions = self.read_transactions()
         return True, None, transactions
 
     def get_transaction_by_id(self, transaction_id):
-        """Retrieve a single transaction by ID."""
         try:
             transaction_id = int(transaction_id)
         except (ValueError, TypeError):
@@ -148,7 +146,6 @@ class SMSTransactionsService:
             return False, "Internal Server Error: Could not save transaction"
 
     def delete_transaction(self, transaction_id):
-        """Delete a transaction by its ID"""
         transactions = self.read_transactions()
 
         try:

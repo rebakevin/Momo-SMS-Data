@@ -2,7 +2,16 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import re
 from urllib.parse import urlparse
-from api.routes import ROUTES
+from api.routes import ROUTES as APP_ROUTES
+from api.docs import DOC_ROUTES
+
+# Merge routes from app and docs
+ROUTES = {}
+for source in [APP_ROUTES, DOC_ROUTES]:
+    for method, paths in source.items():
+        if method not in ROUTES:
+            ROUTES[method] = {}
+        ROUTES[method].update(paths)
 from api.service import SMSTransactionsService
 
 
