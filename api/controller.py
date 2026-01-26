@@ -79,7 +79,6 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
             self._send_error_response(404, "Route not found")
 
     def do_PUT(self):
-        """Handle PUT requests"""
         path = urlparse(self.path).path
 
         handler_func, params = self._match_route('PUT', path)

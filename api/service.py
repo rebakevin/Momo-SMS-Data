@@ -147,7 +147,6 @@ class SMSTransactionsService:
             return False, "Internal Server Error: Could not save transaction"
 
     def update_transaction(self, transaction_id, data):
-        """Update an existing transaction with new data"""
         try:
             target_id = int(transaction_id)
         except (ValueError, TypeError):
