@@ -64,21 +64,35 @@ If the request is succesful you will receive a JSON response object:
 <details>
 <summary>Click to expand</summary>
 
-Updates an existing transaction by its transaction ID. You can update any of these fields: `sender`, `type`, `amount_rwf`, `from`, and `phone`. If you change the amount or type, the running balance will be automatically recalculated.
+Updates an existing transaction by its transaction ID with **flexible partial updates**. Only send the fields you want to change - you don't need to provide all fields. Valid update fields: `sender`, `type`, `amount_rwf`, `from`, and `phone`. If you change the amount or type, the running balance will be automatically recalculated.
 
-When making the PUT request, provide a JSON object with the fields you want to update:
+**Example 1: Update only the sender and amount**
 
 ```json
 {
   "sender": "Airtel",
-  "amount_rwf": 2000,
-  "type": "sent",
-  "from": "Jane Smith",
+  "amount_rwf": 2000
+}
+```
+
+**Example 2: Update only the phone number**
+
+```json
+{
   "phone": "0987654321"
 }
 ```
 
-If the request is successful, you will receive a JSON response object:
+**Example 3: Update transaction type and amount**
+
+```json
+{
+  "type": "sent",
+  "amount_rwf": 5000
+}
+```
+
+**Response (200 OK):**
 
 ```json
 {
@@ -101,6 +115,7 @@ If the request is successful, you will receive a JSON response object:
 **Key Notes:**
 
 - You will receive a `200 OK` status code
+- Send only the fields you want to update - other fields remain unchanged
 - The phone number is automatically masked for security
 - If you update the amount or type, the balance and all subsequent transaction balances are recalculated
 - If you try to send more money than available balance, you'll get a validation error

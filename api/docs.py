@@ -320,8 +320,8 @@ def _doc_create_transaction():
 @api_router.route(
     path="/transactions/{id}",
     methods=["PUT"],
-    summary="Update a transaction",
-    description="Update an existing SMS transaction by its transaction ID. You can update sender, type, amount_rwf, from, and phone fields. Balances are automatically recalculated if amount or type changes.",
+    summary="Update a transaction (partial update)",
+    description="Update an existing SMS transaction by its transaction ID. Supports flexible partial updates - only provide the fields you want to change. Valid update fields: sender, type, amount_rwf, from, and phone. Balances are automatically recalculated if amount or type changes.",
     require_auth=True,
     parameters=[
         {
