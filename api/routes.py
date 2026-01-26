@@ -96,7 +96,7 @@ def create_transaction(handler):
     })
 
 
-def get_transaction_by_id(handler):
+def get_transaction_by_id(handler, id):
     service = handler.service
 
     if not service.is_authenticated(handler.headers):
@@ -105,13 +105,7 @@ def get_transaction_by_id(handler):
         })
         return
 
-    # Extract transaction ID from path (e.g., /transactions/123)
-    path_parts = handler.path.split('/')
-    if len(path_parts) < 3:
-        service.response(handler, 400, {"error": "Bad Request: Invalid path"})
-        return
-
-    transaction_id = path_parts[2]
+    transaction_id = id
 
     success, error, transaction = service.get_transaction_by_id(transaction_id)
     if not success:
@@ -122,6 +116,41 @@ def get_transaction_by_id(handler):
     service.response(handler, 200, {
         "status": "success",
         "data": transaction
+    })
+
+
+def update_transaction(handler, id):
+    service = handler.service
+
+    if not service.is_authenticated(handler.headers):
+        service.response(handler, 401, {
+            "error": "Unauthorized: Invalid or missing credentials"
+        })
+        return
+
+    is_valid, error, data = service.validate_create_transaction_request(
+        handler.headers,
+        handler.rfile
+    )
+
+    if not is_valid:
+        service.response(handler, 400, {"error": error})
+        return
+
+    success, error, updated_transaction = service.update_transaction(id, data)
+    if not success:
+        if "Not Found" in error:
+            service.response(handler, 404, {"error": error})
+        elif "Bad Request" in error:
+            service.response(handler, 400, {"error": error})
+        else:
+            service.response(handler, 500, {"error": error})
+        return
+
+    service.response(handler, 200, {
+        "status": "success",
+        "message": "Transaction updated successfully",
+        "data": updated_transaction
     })
 
 
@@ -155,11 +184,14 @@ ROUTES = {
     "GET": {
         "/": handle_auth_check,
         "/transactions": get_all_transactions,
-        "/transactions/{id}": get_transaction_by_id,
+        "/transactions/:id": get_transaction_by_id,
     },
     "POST": {
         "/transactions": create_transaction,
         "/one-time-data-parser": handle_data_parser,
+    },
+    "PUT": {
+        "/transactions/:id": update_transaction,
     },
     "DELETE": {
         "/transactions/:id": delete_transaction,
