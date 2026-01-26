@@ -1,8 +1,8 @@
 from http.server import BaseHTTPRequestHandler
+import re
 
 from api.routes import ROUTES
 from api.service import SMSTransactionsService
-
 
 class SMSTransactionsController(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -10,13 +10,25 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
         super().__init__(*args, **kwargs)
 
     def handle_route(self, method):
-        handler = ROUTES.get(method, {}).get(self.path)
+        routes = ROUTES.get(method, {})
 
-        if not handler:
-            self.send_error(404, "Not Found")
+        if self.path in routes:
+            routes[self.path](self)
             return
 
-        handler(self)
+        for route, handler in routes.items():
+            if "{id}" in route:
+                pattern = route.replace("{id}", r"(\d+)")
+                match = re.fullmatch(pattern, self.path)
+
+                if match:
+                    self.path_params = {
+                        "id": match.group(1)
+                    }
+                    handler(self)
+                    return
+
+        self.send_error(404, "Not Found")
 
     def do_GET(self):
         self.handle_route("GET")
