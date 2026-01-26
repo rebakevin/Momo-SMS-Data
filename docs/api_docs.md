@@ -1,10 +1,12 @@
 # API Docs
 
 ### POST `/transactions`
+
 <details>
 <summary>Click to expand</summary>
 
 When making the POST request you have to provide a JSON object that looks like this:
+
 ```json
 {
   "sender": "name (string)",
@@ -16,21 +18,22 @@ When making the POST request you have to provide a JSON object that looks like t
 ```
 
 If the request is succesful you will receive a JSON response object:
+
 ```json
 {
-    "status": "success",
-    "message": "Transaction created successfully",
-    "data": {
-        "sender": "M-Money",
-        "amount_rwf": 10000,
-        "type": "received",
-        "from": "Kevin Rebakure",
-        "phone_masked": "*******630",
-        "transaction_id": 4,
-        "date": "2026-01-26T08:39:04",
-        "readable_date": "26 Jan 2026 08:39:04 AM",
-        "balance_rwf": 40000
-    }
+  "status": "success",
+  "message": "Transaction created successfully",
+  "data": {
+    "sender": "M-Money",
+    "amount_rwf": 10000,
+    "type": "received",
+    "from": "Kevin Rebakure",
+    "phone_masked": "*******630",
+    "transaction_id": 4,
+    "date": "2026-01-26T08:39:04",
+    "readable_date": "26 Jan 2026 08:39:04 AM",
+    "balance_rwf": 40000
+  }
 }
 ```
 
@@ -38,15 +41,17 @@ If the request is succesful you will receive a JSON response object:
 - The balance is calculated. When you send money, the balance will be reduced and when you receive money the balance will be increased.
 - You will receive a `201 CREATED` status code
 - Validation errors will be represented with this JSON object
+
 ```json
-    {
-        "error": "Bad Request: Missing required fields (from, phone)"
-    }
+{
+  "error": "Bad Request: Missing required fields (from, phone)"
+}
 ```
 
 </details>
 
 ### GET `/transactions` and `/transactions/{id}`
+
 <details>
 <summary>Click to expand</summary>
 
@@ -54,28 +59,120 @@ If the request is succesful you will receive a JSON response object:
 
 </details>
 
-### PATCH `/transactions/{id}`
+### PUT `/transactions/{id}`
+
 <details>
 <summary>Click to expand</summary>
 
-[Victor - Documentation]
+Updates an existing transaction by its transaction ID with **flexible partial updates**. Only send the fields you want to change - you don't need to provide all fields. Valid update fields: `sender`, `type`, `amount_rwf`, `from`, and `phone`. If you change the amount or type, the running balance will be automatically recalculated.
+
+**Example 1: Update only the sender and amount**
+
+```json
+{
+  "sender": "Airtel",
+  "amount_rwf": 2000
+}
+```
+
+**Example 2: Update only the phone number**
+
+```json
+{
+  "phone": "0987654321"
+}
+```
+
+**Example 3: Update transaction type and amount**
+
+```json
+{
+  "type": "sent",
+  "amount_rwf": 5000
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "status": "success",
+  "message": "Transaction updated successfully",
+  "data": {
+    "transaction_id": 1,
+    "sender": "Airtel",
+    "amount_rwf": 2000,
+    "type": "sent",
+    "from": "Jane Smith",
+    "phone_masked": "*******321",
+    "date": "2026-01-24T10:30:00",
+    "readable_date": "24 Jan 2026 10:30:00 AM",
+    "balance_rwf": 3000
+  }
+}
+```
+
+**Key Notes:**
+
+- You will receive a `200 OK` status code
+- Send only the fields you want to update - other fields remain unchanged
+- The phone number is automatically masked for security
+- If you update the amount or type, the balance and all subsequent transaction balances are recalculated
+- If you try to send more money than available balance, you'll get a validation error
+- Validation errors will be represented with this JSON object:
+
+```json
+{
+  "error": "Bad Request: Invalid transaction data"
+}
+```
+
+**Possible Error Responses:**
+
+- `400 Bad Request`: Invalid data format or insufficient funds
+- `401 Unauthorized`: Invalid or missing credentials
+- `404 Not Found`: Transaction ID does not exist
+- `500 Internal Server Error`: Server error while updating
 
 </details>
 
 ### DELETE `/transactions/{id}`
+
 <details>
 <summary>Click to expand</summary>
 
-[Elie - Documentation]
+To delete a transaction, send a DELETE request to `{{base_url}}/transactions/{id}`.
+
+**Success Response:**
+Example route: `{{base_url}}/transactions/3`
+
+```json
+{
+    "status": "success",
+    "message": "Transaction deleted successfully",
+    "transaction_id": 3
+}
+```
+
+**Fail Response:**
+If the transaction ID does not exist:
+
+```json
+{
+    "error": "Not Found: Transaction with ID 2 not found"
+}
+```
 
 </details>
 
 ### POST `/one-time-data-parser`
+
 <details>
 <summary>Click to expand</summary>
 
-- Converts XML data from `app/assets/modified_sms_v2.xml` to JSON format. 
+- Converts XML data from `app/assets/modified_sms_v2.xml` to JSON format.
 - ⚠️ **IMPORTANT:** This endpoint can only be called **once** successfully. Subsequent calls will return an error.
+
 ```json
 {
   "success": true,
@@ -108,6 +205,7 @@ If the request is succesful you will receive a JSON response object:
 </details>
 
 ### GET `/api-docs`
+
 <details>
 <summary>Click to expand</summary>
 
@@ -117,6 +215,7 @@ If the request is succesful you will receive a JSON response object:
 </details>
 
 ### GET `/openapi.json`
+
 <details>
 <summary>Click to expand</summary>
 

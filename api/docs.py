@@ -319,6 +319,77 @@ def _doc_create_transaction():
 
 @api_router.route(
     path="/transactions/{id}",
+    methods=["PUT"],
+    summary="Update a transaction (partial update)",
+    description="Update an existing SMS transaction by its transaction ID. Supports flexible partial updates - only provide the fields you want to change. Valid update fields: sender, type, amount_rwf, from, and phone. Balances are automatically recalculated if amount or type changes.",
+    require_auth=True,
+    parameters=[
+        {
+            "name": "id",
+            "in": "path",
+            "required": True,
+            "schema": {"type": "integer"},
+            "description": "Transaction ID to update"
+        }
+    ],
+    responses={
+        "200": {
+            "description": "Transaction updated successfully",
+            "content": {
+                "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "status": {"type": "string"},
+                            "message": {"type": "string"},
+                            "data": {
+                                "type": "object",
+                                "properties": {
+                                    "transaction_id": {"type": "integer"},
+                                    "sender": {"type": "string"},
+                                    "type": {"type": "string"},
+                                    "amount_rwf": {"type": "number"},
+                                    "from": {"type": "string"},
+                                    "phone_masked": {"type": "string"},
+                                    "date": {"type": "string"},
+                                    "readable_date": {"type": "string"},
+                                    "balance_rwf": {"type": "number"}
+                                }
+                            }
+                        }
+                    },
+                    "example": {
+                        "status": "success",
+                        "message": "Transaction updated successfully",
+                        "data": {
+                            "transaction_id": 1,
+                            "sender": "Airtel",
+                            "type": "sent",
+                            "amount_rwf": 2000,
+                            "from": "Jane Smith",
+                            "phone_masked": "*******789",
+                            "date": "2026-01-24T10:30:00",
+                            "readable_date": "24 Jan 2026 10:30:00 AM",
+                            "balance_rwf": 3000
+                        }
+                    }
+                }
+            }
+        },
+        "400": error_response("Bad request - Validation error or insufficient funds",
+                              {"error": "Bad Request: Invalid transaction data or insufficient funds"}),
+        "401": error_response("Unauthorized", {"error": "Unauthorized: Invalid or missing credentials"}),
+        "404": error_response("Not found", {"error": "Not Found: Transaction with ID 1 does not exist"}),
+        "500": error_response("Internal server error", {"error": "Internal Server Error: Could not update transaction"})
+    },
+    tags=["Transactions"]
+)
+def _doc_update_transaction():
+    pass
+
+
+@api_router.route(
+    path="/transactions/{id}",
     methods=["DELETE"],
     summary="Delete a transaction",
     description="Remove a transaction from the system by its transaction ID",
