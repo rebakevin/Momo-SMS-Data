@@ -4,7 +4,6 @@ import re
 from api.routes import ROUTES
 from api.service import SMSTransactionsService
 
-
 class SMSTransactionsController(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.service = SMSTransactionsService()
@@ -13,7 +12,6 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
     def handle_route(self, method):
         routes = ROUTES.get(method, {})
 
-    
         if self.path in routes:
             routes[self.path](self)
             return
@@ -30,7 +28,6 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
                     handler(self)
                     return
 
-        # 3️⃣ No route matched
         self.send_error(404, "Not Found")
 
     def do_GET(self):
