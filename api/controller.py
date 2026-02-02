@@ -20,6 +20,17 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
 
     service = SMSTransactionsService()
 
+    def __init__(self, *args, **kwargs):
+        self.user_id = None
+        self.route_params = {}
+        super().__init__(*args, **kwargs)
+
+    def log_request(self, code='-', size='-'):
+        message = f"{self.command} {self.path} {code}"
+        t_id = self.route_params.get('id')
+        self.service.log_activity("HTTP", message, user_id=self.user_id, transaction_id=t_id)
+        # super().log_request(code, size)
+
     def _match_route(self, method, path):
         routes = ROUTES.get(method, {})
 
@@ -58,6 +69,7 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         handler_func, params = self._match_route('GET', path)
+        self.route_params = params
         if handler_func:
             if params:
                 handler_func(self, **params)
@@ -70,6 +82,7 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         handler_func, params = self._match_route('POST', path)
+        self.route_params = params
         if handler_func:
             if params:
                 handler_func(self, **params)
@@ -82,6 +95,7 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         handler_func, params = self._match_route('PUT', path)
+        self.route_params = params
         if handler_func:
             if params:
                 handler_func(self, **params)
@@ -94,6 +108,7 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
 
         handler_func, params = self._match_route('DELETE', path)
+        self.route_params = params
         if handler_func:
             if params:
                 handler_func(self, **params)

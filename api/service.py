@@ -102,10 +102,6 @@ class SMSTransactionsService:
 
     def get_all_transactions(self, user_id=None):
         success, error, data = self.repository.get_all_transactions()
-        if success:
-            self.log_activity("INFO", "Fetched all transactions", user_id=user_id)
-        else:
-            self.log_activity("ERROR", f"Failed to fetch transactions: {error}", user_id=user_id)
         return success, error, data
 
     def get_transaction_by_id(self, transaction_id, user_id=None):
@@ -115,10 +111,6 @@ class SMSTransactionsService:
             return False, "Bad Request: Invalid transaction ID format", None
         
         success, error, data = self.repository.get_transaction_by_id(transaction_id)
-        if success:
-            self.log_activity("INFO", f"Fetched transaction {transaction_id}", transaction_id=transaction_id, user_id=user_id)
-        else:
-            self.log_activity("ERROR", f"Failed to fetch transaction {transaction_id}: {error}", transaction_id=transaction_id, user_id=user_id)
         return success, error, data
 
     def generate_transaction_id(self):
@@ -150,8 +142,7 @@ class SMSTransactionsService:
             new_balance = current_balance + amount
         elif transaction_type == "sent":
             if current_balance < amount:
-                self.log_activity("WARNING", f"Insufficient funds for transaction attempt. Amount: {amount}, Balance: {current_balance}", user_id=user_id)
-                return False, f"Bad Request: Insufficient funds. Available balance: {current_balance}", None
+                 return False, f"Bad Request: Insufficient funds. Available balance: {current_balance}", None
             new_balance = current_balance - amount
         else:
             return False, "Bad Request: Invalid transaction direction", None
@@ -176,10 +167,7 @@ class SMSTransactionsService:
             # Repo returns 'data' which is the input dict + 'id'.
             # We might want to construct a clean response.
             t_id = created_data.get("transaction_id")
-            self.log_activity("INFO", f"Created transaction {t_id}", transaction_id=t_id, user_id=user_id)
-        else:
-            self.log_activity("ERROR", f"Failed to create transaction: {error}", user_id=user_id)
-            
+        
         return success, error, created_data
 
     def update_transaction(self, transaction_id, data, user_id=None):
@@ -196,11 +184,6 @@ class SMSTransactionsService:
             
         success, error, updated_transaction = self.repository.update_transaction(t_id, repo_data)
         
-        if success:
-             self.log_activity("INFO", f"Updated transaction {transaction_id}", transaction_id=t_id, user_id=user_id)
-        else:
-             self.log_activity("ERROR", f"Failed to update transaction {transaction_id}: {error}", transaction_id=t_id, user_id=user_id)
-             
         return success, error, updated_transaction
 
     def delete_transaction(self, transaction_id, user_id=None):
@@ -211,11 +194,6 @@ class SMSTransactionsService:
             
         success, error, deleted_id = self.repository.delete_transaction(t_id)
         
-        if success:
-            self.log_activity("INFO", f"Deleted transaction {transaction_id}", transaction_id=t_id, user_id=user_id)
-        else:
-            self.log_activity("ERROR", f"Failed to delete transaction {transaction_id}: {error}", transaction_id=t_id, user_id=user_id)
-            
         return success, error, deleted_id
 
     def response(self, handler, status_code, data):
