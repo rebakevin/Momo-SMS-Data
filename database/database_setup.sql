@@ -1,43 +1,60 @@
-CREATE TABLE `Transactions`(
-    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `date` DATETIME NOT NULL,
-    `subject` VARCHAR(50) NOT NULL,
-    `body` TEXT NOT NULL,
-    `status` INT NOT NULL,
-    `service_center` VARCHAR(255) NOT NULL,
-    `read` TINYTEXT NOT NULL,
-    `locked` INT NOT NULL,
-    `date_sent` TIMESTAMP NOT NULL,
-    `readable_date` VARCHAR(100) NOT NULL,
-    `contact_name` VARCHAR(50) NOT NULL,
-    `transaction_id` INT NOT NULL,
-    `amount` DOUBLE NOT NULL,
-    `balance_after` DOUBLE NOT NULL,
-    `direction` VARCHAR(5) NOT NULL
-);
-CREATE TABLE `Users`(
-    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(50) NOT NULL,
-    `phone_number` VARCHAR(50) NOT NULL
-);
+-- Disable foreign key checks temporarily to avoid issues during table creation
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS `System Logs`;
+DROP TABLE IF EXISTS `Transactions`;
+DROP TABLE IF EXISTS `Users`;
+DROP TABLE IF EXISTS `Transaction Categories`;
+
+-- Create Transaction Categories table
 CREATE TABLE `Transaction Categories`(
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(255) NOT NULL,
     `description` VARCHAR(255) NOT NULL
 );
+
+-- Create Users table
+CREATE TABLE `Users`(
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `name` VARCHAR(50) NOT NULL,
+    `phone_number` VARCHAR(50) NOT NULL
+);
+
+-- Create Transactions table
+-- Changed: Added category_id and user_id as foreign keys
+CREATE TABLE `Transactions`(
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `date` DATETIME NOT NULL,
+    `subject` VARCHAR(50) DEFAULT NULL,
+    `body` TEXT DEFAULT NULL,
+    `status` INT DEFAULT 1,
+    `service_center` VARCHAR(255) DEFAULT '',
+    `read` TINYTEXT DEFAULT NULL,
+    `locked` INT DEFAULT 0,
+    `date_sent` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `readable_date` VARCHAR(100) DEFAULT NULL,
+    `contact_name` VARCHAR(50) DEFAULT NULL,
+    `transaction_id` INT DEFAULT NULL,
+    `amount` DOUBLE NOT NULL,
+    `balance_after` DOUBLE DEFAULT 0,
+    `direction` VARCHAR(10) NOT NULL,
+    `category_id` BIGINT UNSIGNED DEFAULT NULL,
+    `user_id` BIGINT UNSIGNED DEFAULT NULL,
+    FOREIGN KEY (`category_id`) REFERENCES `Transaction Categories`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE SET NULL
+);
+
+-- Create System Logs table
 CREATE TABLE `System Logs`(
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `type` VARCHAR(10) NOT NULL,
-    `timestamp` TIMESTAMP NOT NULL,
+    `type` VARCHAR(50) NOT NULL,
+    `timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `message` TEXT NOT NULL,
-    `transaction_id` BIGINT NOT NULL,
-    `user_id` BIGINT NOT NULL
+    `transaction_id` BIGINT UNSIGNED DEFAULT NULL,
+    `user_id` BIGINT UNSIGNED DEFAULT NULL,
+    FOREIGN KEY (`transaction_id`) REFERENCES `Transactions`(`id`) ON DELETE SET NULL,
+    FOREIGN KEY (`user_id`) REFERENCES `Users`(`id`) ON DELETE SET NULL
 );
-ALTER TABLE
-    `System Logs` ADD CONSTRAINT `system logs_user_id_foreign` FOREIGN KEY(`user_id`) REFERENCES `Users`(`id`);
-ALTER TABLE
-    `Transactions` ADD CONSTRAINT `transactions_id_foreign` FOREIGN KEY(`id`) REFERENCES `Transaction Categories`(`id`);
-ALTER TABLE
-    `System Logs` ADD CONSTRAINT `system logs_transaction_id_foreign` FOREIGN KEY(`transaction_id`) REFERENCES `Transactions`(`id`);
-ALTER TABLE
-    `Users` ADD CONSTRAINT `users_id_foreign` FOREIGN KEY(`id`) REFERENCES `Transactions`(`id`);
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
