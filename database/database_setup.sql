@@ -1,4 +1,4 @@
-CREATE TABLE `Transactions`(
+CREATE TABLE `transactions`(
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `date` DATETIME NOT NULL,
     `subject` VARCHAR(50) NOT NULL,
@@ -10,22 +10,23 @@ CREATE TABLE `Transactions`(
     `date_sent` TIMESTAMP NOT NULL,
     `readable_date` VARCHAR(100) NOT NULL,
     `contact_name` VARCHAR(50) NOT NULL,
-    `transaction_id` INT NOT NULL,
+    `user_id` BIGINT NOT NULL,
+    `category_id` INT NOT NULL,
     `amount` DOUBLE NOT NULL,
     `balance_after` DOUBLE NOT NULL,
     `direction` VARCHAR(5) NOT NULL
 );
-CREATE TABLE `Users`(
+CREATE TABLE `users`(
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(50) NOT NULL,
     `phone_number` VARCHAR(50) NOT NULL
 );
-CREATE TABLE `Transaction Categories`(
+CREATE TABLE `transaction_categories`(
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `name` VARCHAR(255) NOT NULL,
     `description` VARCHAR(255) NOT NULL
 );
-CREATE TABLE `System Logs`(
+CREATE TABLE `system_logs`(
     `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `type` VARCHAR(10) NOT NULL,
     `timestamp` TIMESTAMP NOT NULL,
@@ -34,10 +35,10 @@ CREATE TABLE `System Logs`(
     `user_id` BIGINT NOT NULL
 );
 ALTER TABLE
-    `System Logs` ADD CONSTRAINT `system logs_user_id_foreign` FOREIGN KEY(`user_id`) REFERENCES `Users`(`id`);
+    `system_logs` ADD CONSTRAINT `system_logs_user_id_foreign` FOREIGN KEY(`user_id`) REFERENCES `users`(`id`);
 ALTER TABLE
-    `Transactions` ADD CONSTRAINT `transactions_id_foreign` FOREIGN KEY(`id`) REFERENCES `Transaction Categories`(`id`);
+    `transactions` ADD CONSTRAINT `transactions_id_foreign` FOREIGN KEY(`category_id`) REFERENCES `transaction_categories`(`id`);
 ALTER TABLE
-    `System Logs` ADD CONSTRAINT `system logs_transaction_id_foreign` FOREIGN KEY(`transaction_id`) REFERENCES `Transactions`(`id`);
+    `system_logs` ADD CONSTRAINT `system_logs_transaction_id_foreign` FOREIGN KEY(`transaction_id`) REFERENCES `transactions`(`id`);
 ALTER TABLE
-    `Users` ADD CONSTRAINT `users_id_foreign` FOREIGN KEY(`id`) REFERENCES `Transactions`(`id`);
+    `transactions` ADD CONSTRAINT `transactions_user_id_foreign` FOREIGN KEY(`user_id`) REFERENCES `users`(`id`);
