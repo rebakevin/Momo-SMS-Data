@@ -1,7 +1,4 @@
-import sys
-import os
-from datetime import datetime
-from api.repository import TransactionRepository
+from api.db.repository import TransactionRepository
 
 def verify():
     print("Verifying setup...")

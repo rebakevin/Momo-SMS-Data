@@ -1,6 +1,6 @@
 import mysql.connector
 import os
-from api.db import Database
+from api.db.db import Database
 
 def run_migration():
     print("Starting migration...")

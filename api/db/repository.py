@@ -1,5 +1,4 @@
-from api.db import Database
-import mysql.connector
+from api.db.db import Database
 from mysql.connector import Error
 
 class TransactionRepository:

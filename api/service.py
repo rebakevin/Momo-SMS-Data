@@ -1,9 +1,8 @@
 import json
-import os
 from datetime import datetime
 
 from api.auth import is_authenticated as check_auth
-from api.repository import TransactionRepository
+from api.db.repository import TransactionRepository
 
 
 class SMSTransactionsService:
