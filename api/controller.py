@@ -3,7 +3,7 @@ import re
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
-from api.docs import DOC_ROUTES
+from openapi.docs import DOC_ROUTES
 from api.routes import ROUTES as APP_ROUTES
 from api.service import SMSTransactionsService
 
