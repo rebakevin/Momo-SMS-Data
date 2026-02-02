@@ -12,15 +12,9 @@ class TransactionRepository:
 
         cursor = connection.cursor(dictionary=True)
         try:
-            # 1. Handle User (Find or Create)
             user_id = None
             contact_name = data.get("from")
-            phone = data.get("phone") # Original phone before masking, if available
-            
-            # Note: service.py currently deletes 'phone' before calling write, 
-            # we need to ensure we pass the full data to repo before modifying it or pass fields explicitly.
-            # Assuming 'data' passed here still has 'phone' if it was in the request? 
-            # Wait, service.py used to modify 'data' in place. I will update service.py to pass clean data.
+            phone = data.get("phone") 
             
             if contact_name or phone:
                 # Try to find user
@@ -31,9 +25,6 @@ class TransactionRepository:
                 if user:
                     user_id = user['id']
                 else:
-                    # Create new user
-                    # If phone is missing but we have name, or vice versa? 
-                    # For now assume we create if we have at least one?
                     if not contact_name: contact_name = "Unknown"
                     if not phone: phone = "Unknown"
                     
@@ -41,7 +32,6 @@ class TransactionRepository:
                     cursor.execute(insert_user, (contact_name, str(phone)))
                     user_id = cursor.lastrowid
 
-            # 2. Insert Transaction
             query = """
                 INSERT INTO Transactions (
                     transaction_id, date, readable_date, 
@@ -65,10 +55,9 @@ class TransactionRepository:
             direction = data.get("type")
             sender = data.get("sender", "M-Money")
             
-            # Defaults
             status = 1
             locked = 0
-            service_center = "M-Money" # Assuming sender is service center
+            service_center = "M-Money"
 
             cursor.execute(query, (
                 t_id, date_val, readable_date,
@@ -80,7 +69,6 @@ class TransactionRepository:
             new_id = cursor.lastrowid
             connection.commit()
             
-            # Construct result to match previous dictionary format if needed
             data['id'] = new_id
             return True, None, data
 
@@ -112,8 +100,9 @@ class TransactionRepository:
             cursor.execute(query)
             rows = cursor.fetchall()
             
-            # Map back to API format (e.g. amount -> amount_rwf)
-            # The SQL alias handles some, but let's be explicit
+            cursor.execute(query)
+            rows = cursor.fetchall()
+            
             results = []
             for row in rows:
                 item = {
@@ -125,7 +114,6 @@ class TransactionRepository:
                     "type": row['type'],
                     "from": row['from'],
                     "sender": row['sender'],
-                    # Mask phone again for display
                     "phone_masked": self._mask_phone(row['phone']) if row['phone'] else None
                 }
                 results.append(item)
@@ -144,7 +132,6 @@ class TransactionRepository:
 
         cursor = connection.cursor(dictionary=True)
         try:
-            # We search by the external transaction_id, not the PK id
             query = """
                 SELECT 
                     t.transaction_id, t.date, t.readable_date, t.amount, t.balance_after as balance_rwf, 
@@ -196,20 +183,6 @@ class TransactionRepository:
             connection.close()
 
     def update_transaction(self, transaction_id, data):
-        # This is complex because of balance recalculation. 
-        # For now, let's implement the basic update of fields.
-        # Balance recalculation in SQL is hard without a stored proc or reading all.
-        # We might need to stick to the service logic: read all (or from point), recalculate, save.
-        # OR: Lock table, read relevant rows, update in memory, write back.
-        
-        # Given the scope, maybe we just update the specific record's fields for now
-        # and warn that balance recalculation is expensive/TODO?
-        # The previous implementation recalculated EVERYTHING. 
-        # In a real DB, we wouldn't fetch everything.
-        # But if the requirement implies keeping the logic...
-        
-        # Let's try to just update fields first.
-        
         connection = self.db.get_connection()
         if not connection:
             return False, "Database connection failed", None
@@ -225,8 +198,6 @@ class TransactionRepository:
             
             pk_id = existing['id']
             
-            # Fields to update
-            # data has: sender, type, amount_rwf, from
             updates = []
             params = []
             

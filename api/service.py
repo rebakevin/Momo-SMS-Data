@@ -23,9 +23,6 @@ class SMSTransactionsService:
                 "transaction_id": transaction_id,
                 "user_id": user_id
             }
-            # Validate using model before sending to repo (optional but good practice)
-            # log_model = LogCreate(**log_data) 
-            # We skip strict model check here to avoid breaking logging on error, but repo handles it.
             self.log_repository.create_log(log_data)
         except Exception as e:
             print(f"Failed to write log: {e}")
@@ -57,7 +54,6 @@ class SMSTransactionsService:
         except json.JSONDecodeError:
             return False, "Bad Request: Invalid JSON", None
         except ValidationError as e:
-             # Format Pydantic errors nicely
             errors = []
             for err in e.errors():
                 field = ".".join(str(x) for x in err['loc'])
@@ -118,23 +114,17 @@ class SMSTransactionsService:
         return max_id + 1
 
     def write_transaction(self, data, user_id=None):
-        # 1. Generate transaction_id
         data["transaction_id"] = self.generate_transaction_id()
 
-        # 2. Date and readable_date
         now = datetime.now()
         data["date"] = now.strftime("%Y-%m-%dT%H:%M:%S")
         data["readable_date"] = now.strftime("%d %b %Y %I:%M:%S %p")
 
-        # 3. Calculate balance
         success, error, transactions = self.repository.get_all_transactions()
         current_balance = 0
         if success and transactions:
-            # Assuming first item is latest based on sort order
             current_balance = transactions[0].get("balance_rwf", 0)
 
-        # Ensure we have defaults because Pydantic models might exclude them if not set, 
-        # but here we rely on what passed validation.
         amount = data["amount"]
         transaction_type = data["direction"]
 
@@ -149,23 +139,16 @@ class SMSTransactionsService:
         
         data["balance_rwf"] = new_balance
         
-        # Map fields for Repository
-        # Repository expects keys: amount_rwf, type, from, sender
-        # Data from Pydantic has: amount, direction, contact_name, sender
+        data["balance_rwf"] = new_balance
         
         repo_data = data.copy()
         repo_data["amount_rwf"] = data["amount"]
         repo_data["type"] = data["direction"]
         repo_data["from"] = data["contact_name"]
         
-        # Pass to Repository
         success, error, created_data = self.repository.create_transaction(repo_data)
         
         if success:
-            # Re-map for response? Or return what repo returned?
-            # Repo returns with ID and formatted fields? 
-            # Repo returns 'data' which is the input dict + 'id'.
-            # We might want to construct a clean response.
             t_id = created_data.get("transaction_id")
         
         return success, error, created_data
@@ -176,7 +159,9 @@ class SMSTransactionsService:
         except ValueError:
             return False, "Bad Request: Invalid ID", None
             
-        # Map fields for Repo
+        except ValueError:
+            return False, "Bad Request: Invalid ID", None
+            
         repo_data = data.copy()
         if "amount" in data: repo_data["amount_rwf"] = data["amount"]
         if "direction" in data: repo_data["type"] = data["direction"]

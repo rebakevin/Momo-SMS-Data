@@ -7,7 +7,6 @@ from openapi.docs import DOC_ROUTES
 from api.routes import ROUTES as APP_ROUTES
 from api.service import SMSTransactionsService
 
-# Merge routes from app and docs
 ROUTES = {}
 for source in [APP_ROUTES, DOC_ROUTES]:
     for method, paths in source.items():
@@ -30,22 +29,17 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
         t_id = self.route_params.get('id')
         
         log_type = "HTTP"
-        # Check if code indicates an error (4xx or 5xx)
         if isinstance(code, int):
             if code >= 400:
                 log_type = "HTTP_ERROR"
         elif isinstance(code, str) and (code.startswith('4') or code.startswith('5') or code == '-'):
-             # '-' usually means we didn't get to send a status, likely an error or crash if not handled
              log_type = "HTTP_ERROR"
 
         self.service.log_activity(log_type, message, user_id=self.user_id, transaction_id=t_id)
-        # super().log_request(code, size)
 
     def log_error(self, format, *args):
-        # Override to log protocol errors (e.g. bad request line)
         message = format % args
         self.service.log_activity("ERROR", f"Protocol Error: {message}", user_id=self.user_id)
-        # super().log_error(format, *args)
 
     def _match_route(self, method, path):
         routes = ROUTES.get(method, {})
@@ -55,14 +49,11 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
 
         for route_pattern, handler in routes.items():
             if ':' in route_pattern:
-                # Convert route pattern to regex
-                # /transactions/:id -> /transactions/([^/]+)
                 regex_pattern = re.sub(r':(\w+)', r'([^/]+)', route_pattern)
                 regex_pattern = '^' + regex_pattern + '$'
 
                 match = re.match(regex_pattern, path)
                 if match:
-                    # Extract parameter names and values
                     param_names = re.findall(r':(\w+)', route_pattern)
                     params = dict(zip(param_names, match.groups()))
                     return handler, params

@@ -36,7 +36,6 @@ class DataParser:
         if not os.path.exists(self.xml_file_path):
             raise FileNotFoundError(f"XML file not found at {self.xml_file_path}")
         
-        # Check if file is empty
         if os.path.getsize(self.xml_file_path) == 0:
             raise Exception("XML file is empty. Please add data to the file first.")
         
@@ -44,15 +43,14 @@ class DataParser:
             tree = ET.parse(self.xml_file_path)
             root = tree.getroot()
             
-            # Parse the XML structure
+            root = tree.getroot()
+            
             data = self._parse_element(root)
             self.parsed_data = data
             
-            # Save parsed data to transactions.json
             with open(self.json_output_path, 'w') as json_file:
                 json.dump(data, json_file, indent=2)
             
-            # Mark as parsed
             self.mark_as_parsed()
             
             return {
@@ -74,15 +72,9 @@ class DataParser:
         """
         result = {}
         
-        # Add attributes
-        if element.attrib:
-            result['@attributes'] = element.attrib
-        
-        # Add text content if present
         if element.text and element.text.strip():
             result['text'] = element.text.strip()
         
-        # Parse children
         children = list(element)
         if children:
             child_dict = {}
@@ -90,7 +82,8 @@ class DataParser:
                 child_data = self._parse_element(child)
                 child_tag = child.tag
                 
-                # Handle multiple children with same tag
+                child_tag = child.tag
+                
                 if child_tag in child_dict:
                     if not isinstance(child_dict[child_tag], list):
                         child_dict[child_tag] = [child_dict[child_tag]]
@@ -100,7 +93,8 @@ class DataParser:
             
             result.update(child_dict)
         
-        # If element only has text and no attributes/children, return just the text
+            result.update(child_dict)
+        
         if len(result) == 1 and 'text' in result:
             return result['text']
         
@@ -111,11 +105,9 @@ class DataParser:
         if isinstance(data, list):
             return len(data)
         elif isinstance(data, dict):
-            # Try to find common record containers
             for key in ['transactions', 'messages', 'records', 'sms']:
                 if key in data:
                     return self._count_records(data[key])
-            # Count top-level items
             return len(data)
         return 1
     

@@ -12,7 +12,9 @@ def verify():
     conn.close()
     print("PASS: Database Connected")
     
-    # 2. Test Create
+    conn.close()
+    print("PASS: Database Connected")
+    
     data = {
         "transaction_id": 99999,
         "date": "2026-02-02T12:00:00",
@@ -35,7 +37,9 @@ def verify():
     t_pk = created_data.get('id')
     t_id = 99999
     
-    # 3. Test Get by ID
+    t_pk = created_data.get('id')
+    t_id = 99999
+    
     print("Testing Get by ID...")
     success, error, retrieved = repo.get_transaction_by_id(t_id)
     if not success:
@@ -47,7 +51,8 @@ def verify():
         return
     print("PASS: Retrieved transaction")
     
-    # 4. Test Update
+    print("PASS: Retrieved transaction")
+    
     print("Testing Update...")
     update_data = {"amount_rwf": 600}
     success, error, updated = repo.update_transaction(t_id, update_data)
@@ -61,7 +66,8 @@ def verify():
         return
     print("PASS: Updated transaction")
     
-    # 5. Test Delete
+    print("PASS: Updated transaction")
+    
     print("Testing Delete...")
     success, error, deleted_id = repo.delete_transaction(t_id)
     if not success:

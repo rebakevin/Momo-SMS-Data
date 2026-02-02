@@ -37,7 +37,6 @@ class OpenAPIGenerator:
             tags: List of tags for grouping
         """
         def decorator(func):
-            # Register the route
             if path not in self.routes:
                 self.routes[path] = {}
             
@@ -48,15 +47,12 @@ class OpenAPIGenerator:
                 "operationId": f"{method}_{path.replace('/', '_').strip('_')}"
             }
             
-            # Add tags
             if tags:
                 operation["tags"] = tags
             
-            # Add security
             if require_auth:
                 operation["security"] = [{"basicAuth": []}]
             
-            # Add responses
             if responses:
                 operation["responses"] = responses
             else:
@@ -73,7 +69,6 @@ class OpenAPIGenerator:
                     }
                 }
             
-            # Add request body
             if request_body:
                 operation["requestBody"] = request_body
             

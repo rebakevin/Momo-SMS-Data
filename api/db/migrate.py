@@ -15,9 +15,8 @@ def run_migration():
     with open(sql_file, 'r') as f:
         sql_commands = f.read()
 
-    # Split commands by semicolon, but handle cases where delimiters might be different if needed.
-    # For this simple file, splitting by ';' and filtering empty strings is roughly okay,
-    # but strictly speaking we should be careful. Given the file content, it's safe.
+
+
     commands = sql_commands.split(';')
     
     connection = db.get_connection()

@@ -15,10 +15,9 @@ class Database:
                 'host': 'localhost',
                 'database': 'momo_sms_app',
                 'user': 'admin',
-                'password': 'root', # Hardcoded for now based on docker-compose, should use env vars in real pdxn
+                'password': 'root', 
                 'port': 3307
             }
-            # Override with env vars if present
             if os.getenv('DB_HOST'): cls._instance.config['host'] = os.getenv('DB_HOST')
             if os.getenv('DB_NAME'): cls._instance.config['database'] = os.getenv('DB_NAME')
             if os.getenv('DB_USER'): cls._instance.config['user'] = os.getenv('DB_USER')

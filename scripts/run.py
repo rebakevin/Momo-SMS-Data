@@ -10,7 +10,6 @@ import subprocess
 import platform
 from pathlib import Path
 
-# ANSI color codes (with fallback for Windows)
 if platform.system() == "Windows":
     # Enable ANSI colors on Windows 10+
     try:
@@ -30,11 +29,9 @@ else:
     NC = '\033[0m'
 
 def print_colored(message, color):
-    """Print colored message"""
     print(f"{color}{message}{NC}")
 
 def run_command(command, shell=False, check=True):
-    """Run a command and return result"""
     try:
         result = subprocess.run(
             command,
@@ -54,11 +51,9 @@ def main():
     """Main launcher function"""
     print_colored("Starting Momo SMS Data API...\n", GREEN)
     
-    # Get project root directory
     project_root = Path(__file__).parent.absolute()
     os.chdir(project_root)
     
-    # Determine venv paths based on OS
     if platform.system() == "Windows":
         venv_dir = project_root / "venv"
         python_exe = venv_dir / "Scripts" / "python.exe"
@@ -111,7 +106,8 @@ def main():
             print_colored("✗ requirements.txt not found", RED)
             sys.exit(1)
     
-    # Stop any existing server (cross-platform)
+            sys.exit(1)
+    
     print_colored("Checking for existing server...", YELLOW)
     if platform.system() == "Windows":
         subprocess.run(
