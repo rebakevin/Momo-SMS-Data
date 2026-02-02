@@ -1,35 +1,41 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field, field_validator
+from typing import Optional, Literal
 from datetime import datetime
-from typing import Optional
 
-@dataclass
-class Transaction:
-    amount: float
+class TransactionCreate(BaseModel):
+    sender: str
     direction: str
-    id: Optional[int] = None
-    date: Optional[datetime] = None
-    subject: Optional[str] = None
-    body: Optional[str] = None
-    status: int = 1
-    service_center: str = ""
-    read_status: Optional[str] = None # 'read' is a keyword, mapped to read_status
-    locked: int = 0
-    date_sent: Optional[datetime] = None
-    readable_date: Optional[str] = None
+    amount: float = Field(..., gt=0, description="Amount must be positive")
+    contact_name: str
+    phone: str
+
+    @field_validator('direction')
+    @classmethod
+    def validate_direction(cls, v: str) -> str:
+        if v not in ('sent', 'received'):
+            raise ValueError("direction must be 'sent' or 'received'")
+        return v
+
+class TransactionUpdate(BaseModel):
+    sender: Optional[str] = None
+    direction: Optional[str] = None
+    amount: Optional[float] = Field(None, gt=0)
     contact_name: Optional[str] = None
-    transaction_id: Optional[int] = None # External/Legacy ID
-    balance_after: float = 0.0
-    category_id: Optional[int] = None
+
+    @field_validator('direction')
+    @classmethod
+    def validate_direction(cls, v: str) -> str:
+        if v and v not in ('sent', 'received'):
+            raise ValueError("direction must be 'sent' or 'received'")
+        return v
+
+class LogCreate(BaseModel):
+    type: str
+    message: str
+    transaction_id: Optional[int] = None
     user_id: Optional[int] = None
 
-@dataclass
-class User:
-    name: str
-    phone_number: str
-    id: Optional[int] = None
+class LogResponse(LogCreate):
+    id: int
+    timestamp: datetime
 
-@dataclass
-class TransactionCategory:
-    name: str
-    description: str
-    id: Optional[int] = None

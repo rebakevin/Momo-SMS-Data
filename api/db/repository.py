@@ -286,3 +286,55 @@ class TransactionRepository:
         cursor.close()
         connection.close()
         return row[0] if row and row[0] else 0
+
+class LogRepository:
+    def __init__(self):
+        self.db = Database()
+
+    def create_log(self, data):
+        connection = self.db.get_connection()
+        if not connection:
+            return False, "Database connection failed", None
+
+        cursor = connection.cursor(dictionary=True)
+        try:
+            query = """
+                INSERT INTO `System Logs` (type, message, transaction_id, user_id)
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(query, (
+                data.get("type"),
+                data.get("message"),
+                data.get("transaction_id"),
+                data.get("user_id")
+            ))
+            connection.commit()
+            return True, None, cursor.lastrowid
+        except Error as e:
+            return False, f"Database error: {e}", None
+        finally:
+            cursor.close()
+            connection.close()
+
+    def get_all_logs(self):
+        connection = self.db.get_connection()
+        if not connection:
+            return False, "Database connection failed", []
+
+        cursor = connection.cursor(dictionary=True)
+        try:
+            query = "SELECT * FROM `System Logs` ORDER BY timestamp DESC"
+            cursor.execute(query)
+            logs = cursor.fetchall()
+            
+            # Convert datetime objects to string
+            for log in logs:
+                if log['timestamp']:
+                    log['timestamp'] = str(log['timestamp'])
+                    
+            return True, None, logs
+        except Error as e:
+            return False, f"Database error: {e}", None
+        finally:
+            cursor.close()
+            connection.close()

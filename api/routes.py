@@ -180,11 +180,32 @@ def delete_transaction(handler, id):
     })
 
 
+def get_all_logs(handler):
+    service = handler.service
+    
+    if not service.is_authenticated(handler.headers):
+        service.response(handler, 401, {
+            "error": "Unauthorized: Invalid or missing credentials"
+        })
+        return
+
+    success, error, logs = service.get_all_logs()
+    if not success:
+        service.response(handler, 500, {"error": error})
+        return
+
+    service.response(handler, 200, {
+        "status": "success",
+        "data": logs
+    })
+
+
 ROUTES = {
     "GET": {
         "/": handle_auth_check,
         "/transactions": get_all_transactions,
         "/transactions/:id": get_transaction_by_id,
+        "/logs": get_all_logs,
     },
     "POST": {
         "/transactions": create_transaction,
