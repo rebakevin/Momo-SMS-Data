@@ -26,5 +26,6 @@ This is a simple MoMo simulation app built in pure Python
 - Clone the app `https://github.com/rebakevin/Momo-SMS-Data.git`
 - Install the dependencies `pip install -r requirements.txt`
 - Run `python main.py` to start the server at `http://localhost:8000`
+- With Docker installed run `docker compose up -d` to spin up a MySQL server container instance
 - The documentation will be at `http://localhost:8000/api-docs`
 
