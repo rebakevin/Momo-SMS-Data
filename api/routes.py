@@ -84,7 +84,7 @@ def create_transaction(handler):
         service.response(handler, 400, {"error": error})
         return
 
-    success, error = service.write_transaction(data)
+    success, error, created_data = service.write_transaction(data)
     if not success:
         service.response(handler, 500, {"error": error})
         return
@@ -92,7 +92,7 @@ def create_transaction(handler):
     service.response(handler, 201, {
         "status": "success",
         "message": "Transaction created successfully",
-        "data": data
+        "data": created_data
     })
 
 
