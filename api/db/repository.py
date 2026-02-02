@@ -179,6 +179,22 @@ class TransactionRepository:
             cursor.close()
             connection.close()
 
+    def get_transaction_pk_by_external_id(self, transaction_id):
+        connection = self.db.get_connection()
+        if not connection: return None
+        
+        cursor = connection.cursor()
+        try:
+            query = "SELECT id FROM Transactions WHERE transaction_id = %s"
+            cursor.execute(query, (transaction_id,))
+            row = cursor.fetchone()
+            return row[0] if row else None
+        except Error:
+            return None
+        finally:
+            cursor.close()
+            connection.close()
+
     def update_transaction(self, transaction_id, data):
         # This is complex because of balance recalculation. 
         # For now, let's implement the basic update of fields.

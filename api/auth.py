@@ -18,7 +18,12 @@ def is_authenticated(headers):
         
         decoded_credentials = base64.b64decode(encoded_credentials).decode('utf-8')
         username, password = decoded_credentials.split(':')
+        username, password = decoded_credentials.split(':')
 
-        return username == USERNAME and password == PASSWORD
+        if username == USERNAME and password == PASSWORD:
+            # For now, map admin to User ID 1. In a real app, logic would lookup user by username.
+            return True, 1 
+            
+        return False, None
     except Exception:
-        return False
+        return False, None
