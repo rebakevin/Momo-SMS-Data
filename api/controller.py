@@ -28,8 +28,24 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
         message = f"{self.command} {self.path} {code}"
         t_id = self.route_params.get('id')
-        self.service.log_activity("HTTP", message, user_id=self.user_id, transaction_id=t_id)
+        
+        log_type = "HTTP"
+        # Check if code indicates an error (4xx or 5xx)
+        if isinstance(code, int):
+            if code >= 400:
+                log_type = "HTTP_ERROR"
+        elif isinstance(code, str) and (code.startswith('4') or code.startswith('5') or code == '-'):
+             # '-' usually means we didn't get to send a status, likely an error or crash if not handled
+             log_type = "HTTP_ERROR"
+
+        self.service.log_activity(log_type, message, user_id=self.user_id, transaction_id=t_id)
         # super().log_request(code, size)
+
+    def log_error(self, format, *args):
+        # Override to log protocol errors (e.g. bad request line)
+        message = format % args
+        self.service.log_activity("ERROR", f"Protocol Error: {message}", user_id=self.user_id)
+        # super().log_error(format, *args)
 
     def _match_route(self, method, path):
         routes = ROUTES.get(method, {})
@@ -66,53 +82,69 @@ class SMSTransactionsController(BaseHTTPRequestHandler):
 
     def do_GET(self):
         """Handle GET requests"""
-        path = urlparse(self.path).path
+        try:
+            path = urlparse(self.path).path
 
-        handler_func, params = self._match_route('GET', path)
-        self.route_params = params
-        if handler_func:
-            if params:
-                handler_func(self, **params)
+            handler_func, params = self._match_route('GET', path)
+            self.route_params = params
+            if handler_func:
+                if params:
+                    handler_func(self, **params)
+                else:
+                    handler_func(self)
             else:
-                handler_func(self)
-        else:
-            self._send_error_response(404, "Route not found")
+                self._send_error_response(404, "Route not found")
+        except Exception as e:
+            self.service.log_activity("EXCEPTION", f"Server Error: {e}", user_id=self.user_id)
+            self._send_error_response(500, "Internal Server Error")
 
     def do_POST(self):
-        path = urlparse(self.path).path
+        try:
+            path = urlparse(self.path).path
 
-        handler_func, params = self._match_route('POST', path)
-        self.route_params = params
-        if handler_func:
-            if params:
-                handler_func(self, **params)
+            handler_func, params = self._match_route('POST', path)
+            self.route_params = params
+            if handler_func:
+                if params:
+                    handler_func(self, **params)
+                else:
+                    handler_func(self)
             else:
-                handler_func(self)
-        else:
-            self._send_error_response(404, "Route not found")
+                self._send_error_response(404, "Route not found")
+        except Exception as e:
+            self.service.log_activity("EXCEPTION", f"Server Error: {e}", user_id=self.user_id)
+            self._send_error_response(500, "Internal Server Error")
 
     def do_PUT(self):
-        path = urlparse(self.path).path
+        try:
+            path = urlparse(self.path).path
 
-        handler_func, params = self._match_route('PUT', path)
-        self.route_params = params
-        if handler_func:
-            if params:
-                handler_func(self, **params)
+            handler_func, params = self._match_route('PUT', path)
+            self.route_params = params
+            if handler_func:
+                if params:
+                    handler_func(self, **params)
+                else:
+                    handler_func(self)
             else:
-                handler_func(self)
-        else:
-            self._send_error_response(404, "Route not found")
+                self._send_error_response(404, "Route not found")
+        except Exception as e:
+            self.service.log_activity("EXCEPTION", f"Server Error: {e}", user_id=self.user_id)
+            self._send_error_response(500, "Internal Server Error")
 
     def do_DELETE(self):
-        path = urlparse(self.path).path
+        try:
+            path = urlparse(self.path).path
 
-        handler_func, params = self._match_route('DELETE', path)
-        self.route_params = params
-        if handler_func:
-            if params:
-                handler_func(self, **params)
+            handler_func, params = self._match_route('DELETE', path)
+            self.route_params = params
+            if handler_func:
+                if params:
+                    handler_func(self, **params)
+                else:
+                    handler_func(self)
             else:
-                handler_func(self)
-        else:
-            self._send_error_response(404, "Route not found")
+                self._send_error_response(404, "Route not found")
+        except Exception as e:
+            self.service.log_activity("EXCEPTION", f"Server Error: {e}", user_id=self.user_id)
+            self._send_error_response(500, "Internal Server Error")

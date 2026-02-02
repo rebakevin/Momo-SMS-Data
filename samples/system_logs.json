@@ -1,8 +1,0 @@
-{
-  "id": 5001,
-  "type": "INFO",
-  "timestamp": "2026-01-26 10:15:36",
-  "message": "Transaction processed successfully and balance updated",
-  "transaction_id": 1001,
-  "user_id": 1
-}
