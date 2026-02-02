@@ -1,0 +1,8 @@
+{
+    "id": 505,
+    "type": "INFO",
+    "timestamp": "2023-10-27T10:30:10Z",
+    "message": "Transaction 1001 synced successfully",
+    "transaction_id": 1001,
+    "user_id": 42
+}

@@ -1,0 +1,19 @@
+{
+    "id": 1001,
+    "date": "2023-10-27T10:30:00Z",
+    "subject": "Electricity Bill",
+    "body": "Payment of 5000 RWF for electricity token",
+    "status": 1,
+    "service_center": "MTN Mobile Money",
+    "read": "1",
+    "locked": 0,
+    "date_sent": "2023-10-27T10:30:05Z",
+    "readable_date": "October 27, 2023 10:30 AM",
+    "contact_name": "EUCL",
+    "transaction_id": 987654321,
+    "amount": 5000.00,
+    "balance_after": 45000.00,
+    "direction": "outgoing",
+    "category_id": 1,
+    "user_id": 42
+}
