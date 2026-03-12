@@ -23,8 +23,10 @@ This is a simple MoMo simulation app built in pure Python
 - OpenAPI / Swagger documentation
 
 ## How to run the app
-- Clone the app `https://github.com/rebakevin/Momo-SMS-Data.git`
+- Clone the app `git clone https://github.com/rebakevin/Momo-SMS-Data.git`
+- Change directory into the project `cd Momo-SMS-Data`
 - Make sure you have docker installed and python3 installed on your laptop 
+- Make the startup script executable: `chmod +x startup.sh`
 - Run `./startup.sh` to install the requirements and start the server at `http://localhost:8000`
 - The documentation will be at `http://localhost:8000/api-docs`
 
@@ -39,6 +41,7 @@ curl -u admin:admin http://localhost:8000/transactions
 ```
 
 ## Troubleshooting
+- If startup.sh fails with "permission denied": Run `chmod +x startup.sh`
 - If startup.sh fails: Make sure Docker is running
 - If port 8000 is busy: Kill existing processes with `pkill -f "python main.py"`
 - If database connection fails: Check that MySQL container is healthy with `docker ps`

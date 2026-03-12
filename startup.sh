@@ -3,6 +3,12 @@ set -e
 
 echo "Starting MoMo SMS Data setup..."
 
+# Check if script is being run with proper permissions
+if [ ! -x "$0" ]; then
+    echo "ERROR: Script is not executable. Run: chmod +x startup.sh"
+    exit 1
+fi
+
 # Check Docker command availability
 if command -v docker-compose >/dev/null 2>&1; then
     DOCKER_CMD="docker-compose"
