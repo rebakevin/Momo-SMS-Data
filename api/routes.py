@@ -6,15 +6,19 @@ from api.data_parser import DataParser
 data_parser = DataParser()
 
 
+def send_auth_error(handler):
+    handler.send_response(401)
+    handler.send_header('Content-type', 'application/json')
+    handler.send_header('WWW-Authenticate', 'Basic realm="Momo API"')
+    handler.end_headers()
+    handler.wfile.write(json.dumps(
+        {"error": "Unauthorized: Invalid or missing credentials"}).encode())
+
+
 def handle_auth_check(handler):
     success, user_id = handler.service.is_authenticated(handler.headers)
     if not success:
-        handler.send_response(401)
-        handler.send_header('Content-type', 'application/json')
-        handler.send_header('WWW-Authenticate', 'Basic realm="Momo API"')
-        handler.end_headers()
-        handler.wfile.write(json.dumps(
-            {"error": "Unauthorized: Invalid or missing credentials"}).encode())
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
@@ -56,9 +60,7 @@ def get_all_transactions(handler):
 
     success, user_id = service.is_authenticated(handler.headers)
     if not success:
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
@@ -79,9 +81,7 @@ def create_transaction(handler):
 
     success, user_id = service.is_authenticated(handler.headers)
     if not success:
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
@@ -112,9 +112,7 @@ def get_transaction_by_id(handler, id):
 
     success, user_id = service.is_authenticated(handler.headers)
     if not success:
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
@@ -138,9 +136,7 @@ def update_transaction(handler, id):
 
     success, user_id = service.is_authenticated(handler.headers)
     if not success:
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
@@ -176,9 +172,7 @@ def delete_transaction(handler, id):
 
     success, user_id = service.is_authenticated(handler.headers)
     if not success:
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
@@ -205,9 +199,7 @@ def get_all_logs(handler):
     
     success, user_id = service.is_authenticated(handler.headers)
     if not success:
-        service.response(handler, 401, {
-            "error": "Unauthorized: Invalid or missing credentials"
-        })
+        send_auth_error(handler)
         return
 
     handler.user_id = user_id
