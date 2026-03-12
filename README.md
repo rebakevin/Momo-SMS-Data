@@ -28,3 +28,18 @@ This is a simple MoMo simulation app built in pure Python
 - Run `./startup.sh` to install the requirements and start the server at `http://localhost:8000`
 - The documentation will be at `http://localhost:8000/api-docs`
 
+## API Authentication
+All API endpoints require Basic Authentication:
+- **Username**: `admin`
+- **Password**: `admin`
+
+Example usage:
+```bash
+curl -u admin:admin http://localhost:8000/transactions
+```
+
+## Troubleshooting
+- If startup.sh fails: Make sure Docker is running
+- If port 8000 is busy: Kill existing processes with `pkill -f "python main.py"`
+- If database connection fails: Check that MySQL container is healthy with `docker ps`
+
