@@ -56,9 +56,11 @@ pip install -r requirements.txt -q >/dev/null 2>&1
 echo "Setting up database schema..."
 if ! docker exec mysql_db mysql -uadmin -proot momo_sms_app -e "SHOW TABLES;" 2>/dev/null | grep -q "Transactions"; then
     echo "Creating database tables..."
-    docker exec -i mysql_db mysql -uadmin -proot momo_sms_app < database/database_setup.sql 2>/dev/null
-    if [ $? -ne 0 ]; then
-        echo "ERROR: Failed to create database tables"
+    # Run the database setup - only redirect stdout to suppress warnings
+    docker exec -i mysql_db mysql -uadmin -proot momo_sms_app < database/database_setup.sql >/dev/null
+    SETUP_EXIT_CODE=$?
+    if [ $SETUP_EXIT_CODE -ne 0 ]; then
+        echo "ERROR: Failed to create database tables (exit code: $SETUP_EXIT_CODE)"
         exit 1
     fi
 fi
