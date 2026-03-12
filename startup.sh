@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 echo "Starting MoMo SMS Data setup..."
 
@@ -58,6 +57,10 @@ echo "Setting up database schema..."
 if ! docker exec mysql_db mysql -uadmin -proot momo_sms_app -e "SHOW TABLES;" 2>/dev/null | grep -q "Transactions"; then
     echo "Creating database tables..."
     docker exec -i mysql_db mysql -uadmin -proot momo_sms_app < database/database_setup.sql 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to create database tables"
+        exit 1
+    fi
 fi
 
 TRANSACTION_COUNT=$(docker exec mysql_db mysql -uadmin -proot momo_sms_app -e "SELECT COUNT(*) FROM Transactions;" 2>/dev/null | tail -1)
