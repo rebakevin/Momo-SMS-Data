@@ -54,10 +54,10 @@ source venv/bin/activate
 pip install -r requirements.txt -q >/dev/null 2>&1
 
 echo "Setting up database schema..."
-if ! docker exec mysql_db mysql -uadmin -proot momo_sms_app -e "SHOW TABLES;" 2>/dev/null | grep -q "Transactions"; then
+if ! docker exec mysql_db mysql -uadmin -proot -h localhost momo_sms_app -e "SHOW TABLES;" 2>/dev/null | grep -q "Transactions"; then
     echo "Creating database tables..."
     # Run the database setup - only redirect stdout to suppress warnings
-    docker exec -i mysql_db mysql -uadmin -proot momo_sms_app < database/database_setup.sql >/dev/null
+    docker exec -i mysql_db mysql -uadmin -proot -h localhost momo_sms_app < database/database_setup.sql >/dev/null
     SETUP_EXIT_CODE=$?
     if [ $SETUP_EXIT_CODE -ne 0 ]; then
         echo "ERROR: Failed to create database tables (exit code: $SETUP_EXIT_CODE)"
@@ -65,10 +65,10 @@ if ! docker exec mysql_db mysql -uadmin -proot momo_sms_app -e "SHOW TABLES;" 2>
     fi
 fi
 
-TRANSACTION_COUNT=$(docker exec mysql_db mysql -uadmin -proot momo_sms_app -e "SELECT COUNT(*) FROM Transactions;" 2>/dev/null | tail -1)
+TRANSACTION_COUNT=$(docker exec mysql_db mysql -uadmin -proot -h localhost momo_sms_app -e "SELECT COUNT(*) FROM Transactions;" 2>/dev/null | tail -1)
 if [ "$TRANSACTION_COUNT" -eq 0 ]; then
     echo "Seeding sample data..."
-    docker exec -i mysql_db mysql -uadmin -proot momo_sms_app < database/data_seed.sql >/dev/null 2>&1
+    docker exec -i mysql_db mysql -uadmin -proot -h localhost momo_sms_app < database/data_seed.sql >/dev/null 2>&1
     echo "Sample data loaded!"
 else
     echo "Database already has data"
