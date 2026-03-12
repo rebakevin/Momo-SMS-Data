@@ -54,6 +54,9 @@ source venv/bin/activate
 pip install -r requirements.txt -q >/dev/null 2>&1
 
 echo "Setting up database schema..."
+# Ensure admin user has proper permissions
+docker exec mysql_db mysql -uroot -proot -h localhost -e "GRANT ALL PRIVILEGES ON momo_sms_app.* TO 'admin'@'%'; FLUSH PRIVILEGES;" >/dev/null 2>&1
+
 if ! docker exec mysql_db mysql -uadmin -proot -h localhost momo_sms_app -e "SHOW TABLES;" 2>/dev/null | grep -q "Transactions"; then
     echo "Creating database tables..."
     # Run the database setup - only redirect stdout to suppress warnings
